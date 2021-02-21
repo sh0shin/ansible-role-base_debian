@@ -81,7 +81,7 @@
 - name: hostname
   hostname:
     name: '{{ base_hostname }}'
-    use: debian
+    #use: debian
   when: base_debian_enabled
         and ansible_os_family | string in base_debian_os_family_supported
   tags:

@@ -1,0 +1,11 @@
+---
+- name: converge
+  hosts: all
+
+  become: true
+  gather_facts: true
+  vars:
+    base_debian_enabled: yes
+    base_debian_fstab_hidepid: yes
+  roles:
+    - ansible-role-base_debian

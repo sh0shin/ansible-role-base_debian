@@ -1,0 +1,82 @@
+---
+
+# enabled
+base_debian_enabled: no
+
+# defaults
+base_debian_bin_mode: "0755"
+base_debian_file_mode: "0644"
+base_debian_dir_mode: "0755"
+base_debian_owner: "root"
+base_debian_group: "root"
+base_debian_backup: yes
+base_debian_umask: "022"
+
+# apt config
+base_debian_apt_config_file: '/etc/apt/apt.conf.d/99ansible'
+base_debian_apt_config: {}
+base_debian_apt_config_defaults:
+  "APT::AutoRemove::RecommendsImportant": no
+  "APT::AutoRemove::SuggestsImportant": no
+  "APT::Install-Recommends": no
+  "APT::Install-Suggests": no
+  "Acquire::Languages": "none"
+  "Acquire::PDiffs": no
+
+# packages
+base_debian_packages:
+  - apt-utils
+  - bash
+  - bash-completion
+  - ca-certificates
+  - console-data
+  - file
+  - less
+  - locales
+  - man-db
+  - manpages
+  - procps
+  - psmisc
+  - tzdata
+
+base_debian_packages_local: []
+
+# hostname
+base_hostname: '{{ inventory_hostname }}'
+base_hostname_short: '{{ inventory_hostname_short }}'
+base_domain: '{{ inventory_hostname | replace(inventory_hostname_short ~ ".", "") }}'
+
+# timezone
+base_timezone: "Etc/UTC"
+
+# locales
+base_locale: "en_US.UTF-8"
+base_locale_generate:
+  - '{{ base_locale }}'
+
+# fstab hidepid
+base_debian_fstab_hidepid: no
+base_debian_fstab_file: "/etc/fstab"
+
+# sysctl
+base_debian_sysctl_file: "/etc/sysctl.conf"
+base_debian_sysctl_config: {}
+base_debian_sysctl_config_defaults:
+  # fs
+  fs.protected_hardlinks: 1
+  fs.protected_symlinks: 1
+  # kernel
+  kernel.dmesg_restrict: 1
+  kernel.kptr_restrict: 1
+  # net
+  net.ipv4.conf.all.log_martians: 1
+  net.ipv4.conf.all.rp_filter: 1
+  net.ipv4.conf.default.log_martians: 1
+  net.ipv4.conf.default.rp_filter: 1
+  net.ipv4.icmp_echo_ignore_broadcasts: 1
+  net.ipv4.tcp_rfc1337: 1
+  net.ipv4.tcp_syncookies: 1
+  net.ipv6.bindv6only: 1
+  # vm
+  vm.oom_kill_allocating_task: 1
+  vm.swappiness: 10

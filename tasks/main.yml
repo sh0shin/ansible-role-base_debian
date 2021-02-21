@@ -1,0 +1,168 @@
+---
+
+# forced os variables
+- name: forced os variables
+  include_vars: "{{ lookup('first_found', params) }}"
+  vars:
+    params:
+      files:
+        # role
+        - '{{ role_name }}-{{ inventory_hostname }}.yml'
+        - '{{ role_name }}-{{ inventory_hostname_short }}.yml'
+        - '{{ role_name }}.yml'
+        # distribution
+        - '{{ ansible_distribution }}-{{ ansible_machine | default("none") }}.yml'
+        - '{{ ansible_distribution }}-{{ ansible_architecture | default("none") }}.yml'
+        - '{{ ansible_distribution }}-{{ ansible_distribution_release | default(0) }}.yml'
+        - '{{ ansible_distribution }}-{{ ansible_distribution_version | default(0) }}.yml'
+        - '{{ ansible_distribution }}-{{ ansible_distribution_major_version | default(0) }}.yml'
+        - '{{ ansible_distribution }}.yml'
+        # os family
+        - '{{ ansible_os_family }}-{{ ansible_machine | default("none") }}.yml'
+        - '{{ ansible_os_family }}-{{ ansible_architecture | default("none") }}.yml'
+        - '{{ ansible_os_family }}-{{ ansible_distribution_release | default(0) }}.yml'
+        - '{{ ansible_os_family }}-{{ ansible_distribution_version | default(0) }}.yml'
+        - '{{ ansible_os_family }}-{{ ansible_distribution_major_version | default(0) }}.yml'
+        - '{{ ansible_os_family }}.yml'
+        - 'main.yml'
+      paths:
+        - '{{ inventory_dir }}/vars'
+        - '{{ playbook_dir }}/vars'
+        - 'vars'
+  when: base_debian_enabled
+        and ansible_os_family | string in base_debian_os_family_supported
+  tags:
+    - base_debian
+
+# apt config
+- name: apt config
+  template:
+    dest: '{{ base_debian_apt_config_file }}'
+    src: "{{ lookup('first_found', params) }}"
+    #
+    mode: '{{ base_debian_apt_config_file_mode | default(base_debian_file_mode) }}'
+    owner: '{{ base_debian_apt_config_file_owner | default(base_debian_owner) }}'
+    group: '{{ base_debian_apt_config_file_group | default(base_debian_group) }}'
+    backup: '{{ base_debian_apt_config_file_backup | default(base_debian_backup) }}'
+    validate: '{{ base_debian_apt_config_file_validate | default(omit) }}'
+  vars:
+    tpl_default: '{{ base_debian_apt_config_file | basename }}'
+    tpl_presence: '{{ base_debian_apt_config_file_template | default(tpl_default) }}'
+    params:
+      files:
+        - '{{ tpl_presence }}.{{ inventory_hostname }}.j2'
+        - '{{ tpl_presence }}.{{ ansible_distribution }}-{{ ansible_distribution_version | default(0) }}.j2'
+        - '{{ tpl_presence }}.{{ ansible_distribution }}-{{ ansible_distribution_major_version | default(0) }}.j2'
+        - '{{ tpl_presence }}.{{ ansible_distribution }}.j2'
+        - '{{ tpl_presence }}.{{ ansible_os_family }}.j2'
+        - '{{ tpl_presence }}.j2'
+        - '{{ tpl_presence }}.in.j2'  # role default
+      paths:
+        - '{{ inventory_dir }}/templates'
+        - 'templates'
+  when: base_debian_enabled
+        and ansible_os_family | string in base_debian_os_family_supported
+  tags:
+    - base_debian
+
+# packages
+- name: packages (debian/ubuntu)
+  apt:
+    name: '{{ base_debian_packages | default([]) }}'
+    state: '{{ base_debian_packages_state | default("latest") }}'
+    update_cache: '{{ base_debian_packages_update_cache | default(true) }}'
+    # more parameters
+  when: base_debian_enabled
+        and ansible_os_family | string in base_debian_os_family_supported
+  tags:
+    - base_debian
+
+# hostname
+- name: hostname
+  hostname:
+    name: '{{ base_hostname }}'
+    use: debian
+  when: base_debian_enabled
+        and ansible_os_family | string in base_debian_os_family_supported
+  tags:
+    - base_debian
+
+# timezone
+- name: timezone
+  timezone:
+    name: '{{ base_timezone }}'
+  when: base_debian_enabled
+        and ansible_os_family | string in base_debian_os_family_supported
+  tags:
+    - base_debian
+
+# locales
+- name: generate locales (locale_gen)
+  locale_gen:
+    name: '{{ item }}'
+    state: present
+  loop: '{{ base_locale_generate }}'
+  when: base_debian_enabled
+        and ansible_os_family | string in base_debian_os_family_supported
+  tags:
+    - base_debian
+
+- name: set default locale (debconf)
+  debconf:
+    name: locales
+    question: locales/default_environment_locale
+    value: '{{ base_locale }}'
+    vtype: select
+  notify:
+    - dpkg-reconfigure_locales
+  when: base_debian_enabled
+        and ansible_os_family | string in base_debian_os_family_supported
+  tags:
+    - base_debian
+
+# fstab
+- name: fstab (hidepid)
+  lineinfile:
+    dest: '{{ base_debian_fstab_file }}'
+    regexp: '^proc'
+    line: 'proc /proc proc defaults,nosuid,nodev,noexec,hidepid=2 0 0'
+    backup: '{{ base_debian_fstab_file_backup | default(base_debian_backup) }}'
+  when: base_debian_enabled
+        and base_debian_fstab_hidepid
+        and ansible_os_family | string in base_debian_os_family_supported
+  tags:
+    - base_debian
+
+# sysctl
+- name: sysctl (template)
+  template:
+    dest: '{{ base_debian_sysctl_file }}'
+    src: "{{ lookup('first_found', params) }}"
+    #
+    mode: '{{ base_debian_sysctl_file_mode | default(base_debian_file_mode) }}'
+    owner: '{{ base_debian_sysctl_file_owner | default(base_debian_owner) }}'
+    group: '{{ base_debian_sysctl_file_group | default(base_debian_group) }}'
+    backup: '{{ base_debian_sysctl_file_backup | default(base_debian_backup) }}'
+    validate: '{{ base_debian_sysctl_file_validate | default(omit) }}'
+  vars:
+    tpl_default: '{{ base_debian_sysctl_file | basename }}'
+    tpl_presence: '{{ base_debian_sysctl_file_template | default(tpl_default) }}'
+    params:
+      files:
+        - '{{ tpl_presence }}.{{ inventory_hostname }}.j2'
+        - '{{ tpl_presence }}.{{ ansible_distribution }}-{{ ansible_distribution_version | default(0) }}.j2'
+        - '{{ tpl_presence }}.{{ ansible_distribution }}-{{ ansible_distribution_major_version | default(0) }}.j2'
+        - '{{ tpl_presence }}.{{ ansible_distribution }}.j2'
+        - '{{ tpl_presence }}.{{ ansible_os_family }}.j2'
+        - '{{ tpl_presence }}.j2'
+        - '{{ tpl_presence }}.in.j2'  # role default
+      paths:
+        - '{{ inventory_dir }}/templates'
+        - 'templates'
+  notify:
+    - restart_sysctl_procps
+    - restart_sysctl_systemd
+  when: base_debian_enabled
+        and ansible_os_family | string in base_debian_os_family_supported
+  tags:
+    - base_debian

@@ -1,0 +1,22 @@
+# {{ base_debian_sysctl_file }}
+# {{ ansible_managed }}
+
+{% for sysctl_opt, sysctl_val in base_debian_sysctl_config_defaults.items() %}
+{%  if base_debian_sysctl_config[sysctl_opt] is defined                     %}
+{%    set sysctl_val = base_debian_sysctl_config[sysctl_opt]                %}
+{%  endif                                                                   %}
+{%  if sysctl_val is number                                                 %}
+{{ sysctl_opt }}={{ sysctl_val }}
+{%  elif sysctl_val is string                                               %}
+{{ sysctl_opt }}="{{ sysctl_val }}"
+{%  endif                                                                   %}
+{% endfor                                                                   %}
+{% for sysctl_opt, sysctl_val in base_debian_sysctl_config.items()          %}
+{%  if sysctl_opt not in base_debian_sysctl_config_defaults                 %}
+{%    if sysctl_val is number                                               %}
+{{ sysctl_opt }}={{ sysctl_val }}
+{%    elif sysctl_val is string                                             %}
+{{ sysctl_opt }}="{{ sysctl_val }}"
+{%    endif                                                                 %}
+{%  endif                                                                   %}
+{% endfor                                                                   %}

@@ -1,0 +1,16 @@
+---
+
+- name: dpkg-reconfigure_locales
+  command: "dpkg-reconfigure locales -f noninteractive"
+
+- name: restart_sysctl_procps
+  service:
+    name: procps
+    state: restarted
+  when: ansible_service_mgr != 'systemd'
+
+- name: restart_sysctl_systemd
+  service:
+    name: systemd-sysctl
+    state: restarted
+  when: ansible_service_mgr == 'systemd'

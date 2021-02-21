@@ -1,0 +1,30 @@
+# {{ base_debian_apt_config_file }}
+# {{ ansible_managed }}
+
+{% for apt_opt, apt_val in base_debian_apt_config_defaults.items()  %}
+{%  if base_debian_apt_config[apt_opt] is defined                   %}
+{%    set apt_val = base_debian_apt_config[apt_opt]                 %}
+{%  endif                                                           %}
+{%  if apt_val is sameas true                                       %}
+{{ apt_opt }} "true";
+{%  elif apt_val is sameas false                                    %}
+{{ apt_opt }} "false";
+{%  elif apt_val is number                                          %}
+{{ apt_opt }} {{ apt_val }};
+{%  elif apt_val is string                                          %}
+{{ apt_opt }} "{{ apt_val }}";
+{%  endif                                                           %}
+{% endfor                                                           %}
+{% for apt_opt, apt_val in base_debian_apt_config.items()           %}
+{%  if apt_opt not in base_debian_apt_config_defaults               %}
+{%    if apt_val is sameas true                                     %}
+{{ apt_opt }} "true";
+{%    elif apt_val is sameas false                                  %}
+{{ apt_opt }} "false";
+{%    elif apt_val is number                                        %}
+{{ apt_opt }} {{ apt_val }};
+{%    elif apt_val is string                                        %}
+{{ apt_opt }} "{{ apt_val }}";
+{%    endif                                                         %}
+{%  endif                                                           %}
+{% endfor                                                           %}

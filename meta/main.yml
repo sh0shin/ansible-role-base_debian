@@ -1,0 +1,28 @@
+---
+
+galaxy_info:
+  role_name: base_debian
+  author: sh0shin
+  description: Debian/Ubuntu Base settings
+  # company:
+  # issue_tracker_url:
+  license: BSD-3-Clause
+
+  min_ansible_version: 2.9
+  # min_ansible_container_version:
+
+  platforms:
+    - name: Debian
+      versions:
+        - all
+
+    - name: Ubuntu
+      versions:
+        - all
+
+  galaxy_tags:
+    - base
+    - debian
+    - ubuntu
+
+  dependencies: []

@@ -1,5 +1,5 @@
 [//]: # ( vim: set ft=markdown : )
-# base_debian
+# Base Debian/Ubuntu
 
 DESCRIPTION
 
